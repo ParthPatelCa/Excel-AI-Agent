@@ -1,0 +1,145 @@
+Product Requirements Document (PRD)
+
+Product Name (Working Title): ExcelAI Assistant
+A chat-driven AI assistant integrated into Microsoft Excel for data analysis, chart generation, and insights.
+🔍 1. Problem Statement
+
+Modern Excel users often:
+
+    Struggle to analyze large datasets without advanced Excel knowledge
+
+    Need help creating pivot tables, charts, or summaries
+
+    Use multiple tools or websites for AI-powered data help
+
+Goal: Provide an in-Excel chatbot interface that allows users to interact with their data using natural language, enabling rapid analysis and visualization without leaving Excel.
+🎯 2. Goals and Objectives
+Goal	Objective
+Seamless Excel integration	Embed a sidebar-based chat UI directly in Excel
+Natural language commands	Let users type prompts like “Show me top 5 products by revenue”
+AI-driven insights	Use GPT (via OpenAI API) to interpret and respond
+Data manipulation	Return formulas, charts, summaries, or pivot tables
+Safe and responsible usage	Include guardrails to protect against misuse, data leaks, or abuse
+👤 3. Target Users
+
+    Business analysts
+
+    Finance teams
+
+    Students and educators
+
+    Anyone who works with Excel data and wants smart, AI-based help
+
+🧱 4. Functional Requirements
+Core Features
+Feature	Description
+Excel sidebar UI	Chat-like task pane where users input prompts
+OpenAI integration	GPT processes queries and returns structured results
+Data selection detection	User can select a range in Excel; the tool reads it
+Chart/summary generation	Return suggested charts, summaries, or pivot logic
+Formula generation	Return Excel formulas from plain English
+Insert output into sheet	Button to write results back into the sheet
+History of queries	Session-level chat history in sidebar
+Guardrails for misuse prevention	Input filtering, moderation, and data safety checks
+🧩 5. Technical Requirements
+Frontend (Sidebar UI)
+
+    Built in HTML/CSS/JavaScript (or React) using Office.js
+
+    Chat interface for natural language input/output
+
+    Connects securely to backend (via HTTPS)
+
+Backend (Replit-hosted Node.js)
+
+    Accepts prompt and selected Excel data
+
+    Uses OpenAI API for GPT responses
+
+    Moderation and guardrails layer before sending to GPT
+
+    Formats and returns output (text, formula, or chart directives)
+
+Excel Integration
+
+    Uses Office.js to:
+
+        Read selected range
+
+        Insert formulas or chart objects
+
+        Trigger sidebar actions via buttons
+
+🛡️ 6. Guardrails & Misuse Prevention
+Input Filtering
+Feature	Description
+Prompt moderation (OpenAI API)	Blocks toxic, unsafe, or inappropriate prompts
+Keyword filtering	Rejects prompts involving personal data, deletion, or exploits
+Prompt length cap	Limit input size to reduce risk of prompt injection or misuse
+Rate limiting	Prevents spam, abuse, or system overload from repeated requests
+Output Filtering
+Feature	Description
+Formula validation	Blocks dangerous formulas like those invoking deletions or external links
+No VBA/macros returned	Only support standard Excel-compatible functions
+Output truncation	Limit output size for safety and readability
+Data Privacy
+Feature	Description
+Data scope control	Only selected cells are sent to backend
+Optional data anonymization	Obfuscate or hash column names before sending
+Clear data disclaimer	“Your data is processed for this session only and is not stored.”
+No persistent logging	No backend logs of prompt content or sheet data unless debugging is enabled and anonymized
+Admin & Compliance (Future Phase)
+Feature	Description
+Admin-level settings	Control access, rate limits, and prompt types
+Organization lockdown	Limit use to specific domains or organizations
+Audit logging (opt-in)	Exportable logs for compliance reviews
+📦 7. Deliverables
+
+    Replit project with:
+
+        Sidebar UI (chat box)
+
+        Manifest file for sideloading
+
+        Node.js backend with OpenAI + moderation
+
+    Excel demo sheet for testing
+
+    Documentation:
+
+        Setup instructions
+
+        User guide
+
+        Safety policy and limitations
+
+🚦 8. Milestones & Timeline
+Milestone	Target Date
+✅ PRD Finalized	Day 0
+UI + Excel Integration	Day 3
+Replit backend with GPT + guardrails	Day 5
+Chart/pivot integration	Day 8
+Internal testing	Day 10
+Guardrail tuning	Day 12
+Beta release	Day 14
+⚠️ 9. Known Limitations
+
+    Office.js Add-ins can’t access full Excel features like VBA/macros
+
+    Replit is suitable for dev/testing but not enterprise deployment
+
+    GPT is probabilistic; output needs review in sensitive workflows
+
+    Guardrails will require real-world tuning over time
+
+📈 10. Future Enhancements
+
+    Dashboard auto-generation
+
+    Voice input in sidebar
+
+    Role-based AI access
+
+    Native integration with Microsoft Copilot or Power BI
+
+    GPT fine-tuning for specific Excel tasks
