@@ -1,145 +1,99 @@
-Product Requirements Document (PRD)
+# Product Requirements Document — ExcelAI Add-in
 
-Product Name (Working Title): ExcelAI Assistant
-A chat-driven AI assistant integrated into Microsoft Excel for data analysis, chart generation, and insights.
-🔍 1. Problem Statement
+## Purpose
 
-Modern Excel users often:
+Let users query and analyze Excel data using natural language, directly inside Excel. The AI assistant appears in a task pane and responds with summaries, formulas, chart suggestions, and insights.
 
-    Struggle to analyze large datasets without advanced Excel knowledge
+## Problem Statement
 
-    Need help creating pivot tables, charts, or summaries
+Modern Excel users struggle with:
+- Creating formulas from scratch
+- Generating pivot tables or charts
+- Running quick analysis without switching tools
 
-    Use multiple tools or websites for AI-powered data help
+This tool solves that by embedding AI support into Excel, so users stay in context.
 
-Goal: Provide an in-Excel chatbot interface that allows users to interact with their data using natural language, enabling rapid analysis and visualization without leaving Excel.
-🎯 2. Goals and Objectives
-Goal	Objective
-Seamless Excel integration	Embed a sidebar-based chat UI directly in Excel
-Natural language commands	Let users type prompts like “Show me top 5 products by revenue”
-AI-driven insights	Use GPT (via OpenAI API) to interpret and respond
-Data manipulation	Return formulas, charts, summaries, or pivot tables
-Safe and responsible usage	Include guardrails to protect against misuse, data leaks, or abuse
-👤 3. Target Users
+## Target Users
+- Analysts and finance teams
+- Students and educators
+- Operations and admin teams using spreadsheets for reporting
 
-    Business analysts
+## Goals
 
-    Finance teams
+| Goal                         | Description                                           |
+|------------------------------|-------------------------------------------------------|
+| Native Excel Integration     | Sidebar-based chat interface via Office.js           |
+| Natural Language Input       | User can ask: “Show me top 5 products by revenue”    |
+| AI-Powered Responses         | Use OpenAI to generate formulas, summaries, charts   |
+| Safe and Responsible Use     | Guardrails against dangerous prompts or responses    |
 
-    Students and educators
+## MVP Features
 
-    Anyone who works with Excel data and wants smart, AI-based help
+| Feature                  | Description                                                              |
+|--------------------------|--------------------------------------------------------------------------|
+| Excel Task Pane UI       | Chat interface built using HTML/CSS/JS or React                         |
+| Range Selection Support  | User selects a cell range for context                                   |
+| OpenAI API Integration   | Backend fetches GPT response using selected data                        |
+| Insert into Sheet        | Formulas or summaries inserted via Office.js                            |
+| Prompt Moderation        | Blocks unsafe or unsupported prompts                                    |
+| Response Validation      | No macros, no deletion commands, only formula/chart output              |
+| Session History          | Show last 5–10 prompts in sidebar                                       |
 
-🧱 4. Functional Requirements
-Core Features
-Feature	Description
-Excel sidebar UI	Chat-like task pane where users input prompts
-OpenAI integration	GPT processes queries and returns structured results
-Data selection detection	User can select a range in Excel; the tool reads it
-Chart/summary generation	Return suggested charts, summaries, or pivot logic
-Formula generation	Return Excel formulas from plain English
-Insert output into sheet	Button to write results back into the sheet
-History of queries	Session-level chat history in sidebar
-Guardrails for misuse prevention	Input filtering, moderation, and data safety checks
-🧩 5. Technical Requirements
-Frontend (Sidebar UI)
+## Technical Design
 
-    Built in HTML/CSS/JavaScript (or React) using Office.js
+**Frontend**:
+- Built using Office.js APIs
+- HTML/JS or React-based sidebar interface
+- Hosted over HTTPS (Replit, Netlify, or GitHub Pages)
 
-    Chat interface for natural language input/output
+**Backend**:
+- Node.js API or Flask (depending on reuse from main project)
+- Handles prompt + selected data, sends to OpenAI API
+- Applies prompt filtering and output validation
+- Returns JSON response with plain text, formula, or chart logic
 
-    Connects securely to backend (via HTTPS)
+**Excel Integration**:
+- Uses Office.js to:
+  - Read selected range
+  - Insert formulas/charts
+  - Trigger AI prompt with context
 
-Backend (Replit-hosted Node.js)
+## Guardrails
 
-    Accepts prompt and selected Excel data
+| Type              | Mechanism                                                            |
+|-------------------|----------------------------------------------------------------------|
+| Input Filtering    | OpenAI moderation API, keyword blocklist, input length limit         |
+| Output Filtering   | Block formulas with deletions, macros, external URLs                 |
+| Rate Limiting      | User throttling to avoid abuse                                       |
+| Data Privacy       | Only selected range is sent to backend. No persistent logging.       |
+| Disclaimer         | “No data is stored. AI responses are not guaranteed accurate.”       |
 
-    Uses OpenAI API for GPT responses
+## Deliverables
 
-    Moderation and guardrails layer before sending to GPT
+- Manifest.xml file for sideloading
+- React/JS sidebar UI
+- Secure backend API with GPT logic + filtering
+- Excel test sheet with example prompts
+- Setup docs and limitations
 
-    Formats and returns output (text, formula, or chart directives)
+## Success Metrics
 
-Excel Integration
+- Add-in installed and used by 50+ users within first month
+- Average session time > 2 minutes
+- Prompt response time < 20 seconds for 90% of requests
+- Formula accuracy > 90% (manual validation)
 
-    Uses Office.js to:
+## Limitations
 
-        Read selected range
+- Office.js cannot insert VBA or access macros
+- GPT can hallucinate — results must be reviewed
+- Replit or other free hosting unsuitable for production
+- Fine-tuning or Copilot integration deferred for now
 
-        Insert formulas or chart objects
+## Future Features
 
-        Trigger sidebar actions via buttons
-
-🛡️ 6. Guardrails & Misuse Prevention
-Input Filtering
-Feature	Description
-Prompt moderation (OpenAI API)	Blocks toxic, unsafe, or inappropriate prompts
-Keyword filtering	Rejects prompts involving personal data, deletion, or exploits
-Prompt length cap	Limit input size to reduce risk of prompt injection or misuse
-Rate limiting	Prevents spam, abuse, or system overload from repeated requests
-Output Filtering
-Feature	Description
-Formula validation	Blocks dangerous formulas like those invoking deletions or external links
-No VBA/macros returned	Only support standard Excel-compatible functions
-Output truncation	Limit output size for safety and readability
-Data Privacy
-Feature	Description
-Data scope control	Only selected cells are sent to backend
-Optional data anonymization	Obfuscate or hash column names before sending
-Clear data disclaimer	“Your data is processed for this session only and is not stored.”
-No persistent logging	No backend logs of prompt content or sheet data unless debugging is enabled and anonymized
-Admin & Compliance (Future Phase)
-Feature	Description
-Admin-level settings	Control access, rate limits, and prompt types
-Organization lockdown	Limit use to specific domains or organizations
-Audit logging (opt-in)	Exportable logs for compliance reviews
-📦 7. Deliverables
-
-    Replit project with:
-
-        Sidebar UI (chat box)
-
-        Manifest file for sideloading
-
-        Node.js backend with OpenAI + moderation
-
-    Excel demo sheet for testing
-
-    Documentation:
-
-        Setup instructions
-
-        User guide
-
-        Safety policy and limitations
-
-🚦 8. Milestones & Timeline
-Milestone	Target Date
-✅ PRD Finalized	Day 0
-UI + Excel Integration	Day 3
-Replit backend with GPT + guardrails	Day 5
-Chart/pivot integration	Day 8
-Internal testing	Day 10
-Guardrail tuning	Day 12
-Beta release	Day 14
-⚠️ 9. Known Limitations
-
-    Office.js Add-ins can’t access full Excel features like VBA/macros
-
-    Replit is suitable for dev/testing but not enterprise deployment
-
-    GPT is probabilistic; output needs review in sensitive workflows
-
-    Guardrails will require real-world tuning over time
-
-📈 10. Future Enhancements
-
-    Dashboard auto-generation
-
-    Voice input in sidebar
-
-    Role-based AI access
-
-    Native integration with Microsoft Copilot or Power BI
-
-    GPT fine-tuning for specific Excel tasks
+- Dashboard auto-generation from data
+- Voice input to chat pane
+- Role-based access control
+- Admin console to configure rate limits and permissions
+- Copilot-style inline suggestions
