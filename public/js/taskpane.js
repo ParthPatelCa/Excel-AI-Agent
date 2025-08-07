@@ -35,9 +35,35 @@ function initializeTaskPane() {
         });
     });
 
+    // Advanced feature buttons
+    document.querySelectorAll('.feature-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const action = e.currentTarget.dataset.action;
+            handleQuickAction(action);
+        });
+    });
+
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = e.currentTarget.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+
     // Initialize
     refreshSelectedData();
     updateInputState();
+}
+
+function switchTab(tabName) {
+    // Remove active class from all tabs and panels
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+    
+    // Add active class to selected tab and panel
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
 }
 
 async function refreshSelectedData() {
@@ -149,11 +175,21 @@ async function handleQuickAction(action) {
         return;
     }
 
+    // Handle advanced feature actions
+    if (action.startsWith('api:')) {
+        await handleAdvancedAction(action);
+        return;
+    }
+
     const prompts = {
-        analyze: 'Analyze this data and provide key insights, trends, and statistics.',
-        summarize: 'Generate a summary of this data including count, averages, and key statistics.',
-        chart: 'What type of chart would be best for visualizing this data? Explain why.',
-        formulas: 'Suggest useful Excel formulas I could use with this data.'
+        analyze: 'Perform a comprehensive analysis of this data including statistical insights, trends, outliers, and correlations.',
+        summarize: 'Generate a detailed summary of this data including descriptive statistics, data quality assessment, and key findings.',
+        chart: 'What type of chart would be best for visualizing this data? Explain why and provide specific recommendations.',
+        formulas: 'Suggest useful Excel formulas I could use with this data, including statistical, financial, and analytical formulas.',
+        whatif: 'Help me set up what-if analysis scenarios for this data. Generate optimistic, realistic, and pessimistic scenarios.',
+        predict: 'Analyze trends in this data and provide predictions for future values with confidence intervals.',
+        insights: 'Generate business insights from this data including patterns, opportunities, and recommendations.',
+        scenarios: 'Create scenario planning templates for this data with different business assumptions.'
     };
 
     const message = prompts[action];
@@ -161,6 +197,88 @@ async function handleQuickAction(action) {
         document.getElementById('chatInput').value = message;
         updateInputState();
         await handleSendMessage();
+    }
+}
+
+async function handleAdvancedAction(action) {
+    const [, endpoint, type] = action.split(':');
+    showLoadingState(true);
+    
+    try {
+        let apiUrl, requestBody;
+        
+        switch (endpoint) {
+            case 'analyze':
+                apiUrl = '/api/analyze';
+                requestBody = { 
+                    selectedData: selectedRange, 
+                    analysisType: type || 'comprehensive' 
+                };
+                break;
+                
+            case 'whatif':
+                apiUrl = '/api/whatif/scenarios';
+                requestBody = { 
+                    scenarioData: selectedRange 
+                };
+                break;
+                
+            case 'predictions':
+                apiUrl = '/api/predictions/generate';
+                requestBody = { 
+                    selectedData: selectedRange, 
+                    predictionType: type || 'trend',
+                    timeHorizon: 12
+                };
+                break;
+                
+            case 'insights':
+                apiUrl = '/api/insights/generate';
+                requestBody = { 
+                    selectedData: selectedRange, 
+                    insightType: type || 'comprehensive' 
+                };
+                break;
+                
+            case 'formulas':
+                if (type) {
+                    apiUrl = `/api/formulas/${type}`;
+                    requestBody = { 
+                        parameters: {
+                            range: selectedRange.address,
+                            data: selectedRange.values
+                        }
+                    };
+                } else {
+                    apiUrl = '/api/formulas/library';
+                    await displayFormulaLibrary();
+                    return;
+                }
+                break;
+                
+            default:
+                throw new Error(`Unknown endpoint: ${endpoint}`);
+        }
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayAdvancedResults(data, endpoint);
+        } else {
+            addMessage(`Error: ${data.error}`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Advanced action error:', error);
+        addMessage(`Failed to execute ${endpoint} analysis: ${error.message}`, 'error');
+    } finally {
+        showLoadingState(false);
     }
 }
 
@@ -321,6 +439,326 @@ function clearChat() {
 
 function showError(message) {
     addMessage(message, 'error');
+}
+
+function displayAdvancedResults(data, endpoint) {
+    const chatContainer = document.getElementById('chatContainer');
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'message ai-message advanced-results';
+    
+    let content = '';
+    
+    switch (endpoint) {
+        case 'analyze':
+            content = createAnalysisDisplay(data);
+            break;
+        case 'whatif':
+            content = createWhatIfDisplay(data);
+            break;
+        case 'predictions':
+            content = createPredictionsDisplay(data);
+            break;
+        case 'insights':
+            content = createInsightsDisplay(data);
+            break;
+        case 'formulas':
+            content = createFormulaDisplay(data);
+            break;
+        default:
+            content = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+    
+    resultDiv.innerHTML = content;
+    chatContainer.appendChild(resultDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function createAnalysisDisplay(data) {
+    const analysis = data.analysis || {};
+    const statistics = analysis.statistics || {};
+    
+    return `
+        <div class="analysis-results">
+            <h4>📊 Data Analysis Results</h4>
+            
+            ${statistics.basicStats ? `
+                <div class="stats-section">
+                    <h5>Basic Statistics</h5>
+                    <div class="stats-grid">
+                        ${Object.entries(statistics.basicStats).map(([column, stats]) => `
+                            <div class="stat-item">
+                                <strong>${column}:</strong>
+                                <ul>
+                                    <li>Mean: ${stats.mean?.toFixed(2) || 'N/A'}</li>
+                                    <li>Median: ${stats.median?.toFixed(2) || 'N/A'}</li>
+                                    <li>Std Dev: ${stats.standardDeviation?.toFixed(2) || 'N/A'}</li>
+                                </ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${analysis.insights ? `
+                <div class="insights-section">
+                    <h5>Key Insights</h5>
+                    <ul>
+                        ${analysis.insights.map(insight => `<li>${insight}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            
+            ${analysis.recommendations ? `
+                <div class="recommendations-section">
+                    <h5>Recommendations</h5>
+                    <ul>
+                        ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function createWhatIfDisplay(data) {
+    const scenarios = data.scenarios || [];
+    
+    return `
+        <div class="whatif-results">
+            <h4>🎯 What-If Analysis</h4>
+            
+            <div class="scenarios-grid">
+                ${scenarios.map(scenario => `
+                    <div class="scenario-card">
+                        <h5>${scenario.name}</h5>
+                        <p><strong>Outcome:</strong> ${scenario.expectedOutcome}</p>
+                        <p><strong>Probability:</strong> ${(scenario.probability * 100).toFixed(1)}%</p>
+                        ${scenario.assumptions ? `
+                            <details>
+                                <summary>Assumptions</summary>
+                                <ul>
+                                    ${scenario.assumptions.map(assumption => `<li>${assumption}</li>`).join('')}
+                                </ul>
+                            </details>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            
+            ${data.recommendations ? `
+                <div class="recommendations-section">
+                    <h5>Implementation Steps</h5>
+                    <ol>
+                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ol>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function createPredictionsDisplay(data) {
+    const predictions = data.predictions || {};
+    
+    return `
+        <div class="predictions-results">
+            <h4>🔮 Predictions</h4>
+            
+            <div class="prediction-summary">
+                <p><strong>Method:</strong> ${predictions.method || 'Trend Analysis'}</p>
+                <p><strong>Accuracy:</strong> ${predictions.accuracy || 'Medium'}</p>
+                <p><strong>Reliability:</strong> ${predictions.reliability || 'Medium'}</p>
+            </div>
+            
+            ${predictions.values ? `
+                <div class="prediction-values">
+                    <h5>Predicted Values</h5>
+                    <div class="values-grid">
+                        ${predictions.values.slice(0, 6).map((value, index) => `
+                            <div class="value-item">
+                                <strong>Period ${index + 1}:</strong> ${value.toFixed(2)}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${predictions.trend ? `
+                <div class="trend-info">
+                    <h5>Trend Analysis</h5>
+                    <p><strong>Direction:</strong> ${predictions.trend.direction}</p>
+                    <p><strong>Slope:</strong> ${predictions.trend.slope?.toFixed(4) || 'N/A'}</p>
+                </div>
+            ` : ''}
+            
+            <div class="formula-section">
+                <h5>Excel Formulas</h5>
+                <div class="formula-item">
+                    <code>=FORECAST.LINEAR(future_x, known_y, known_x)</code>
+                    <button onclick="copyToClipboard('=FORECAST.LINEAR(future_x, known_y, known_x)')">Copy</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createInsightsDisplay(data) {
+    const insights = data.insights || {};
+    const keyFindings = data.keyFindings || [];
+    
+    return `
+        <div class="insights-results">
+            <h4>💡 Business Insights</h4>
+            
+            ${keyFindings.length > 0 ? `
+                <div class="key-findings">
+                    <h5>Key Findings</h5>
+                    ${keyFindings.map(finding => `
+                        <div class="finding-item">
+                            <strong>${finding.category}:</strong> ${finding.finding}
+                            <span class="confidence">Confidence: ${(finding.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            ${data.recommendations ? `
+                <div class="recommendations-section">
+                    <h5>Actionable Recommendations</h5>
+                    ${data.recommendations.slice(0, 5).map(rec => `
+                        <div class="recommendation-item">
+                            <div class="rec-header">
+                                <strong>${rec.action}</strong>
+                                <span class="priority priority-${rec.priority}">${rec.priority}</span>
+                            </div>
+                            <p>${rec.insight}</p>
+                            <small>Impact: ${rec.impact} | Effort: ${rec.effort} | Timeline: ${rec.timeline}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            ${data.visualizations ? `
+                <div class="visualization-suggestions">
+                    <h5>Suggested Visualizations</h5>
+                    <div class="viz-grid">
+                        ${data.visualizations.map(viz => `
+                            <div class="viz-item">
+                                <strong>${viz.type}:</strong> ${viz.description}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function createFormulaDisplay(data) {
+    const formula = data.formula || {};
+    
+    return `
+        <div class="formula-results">
+            <h4>📝 Formula Generator</h4>
+            
+            <div class="formula-main">
+                <h5>Generated Formula</h5>
+                <div class="formula-code">
+                    <code>${formula.formula || 'No formula generated'}</code>
+                    <button onclick="copyToClipboard('${formula.formula}')">Copy</button>
+                </div>
+            </div>
+            
+            ${formula.description ? `
+                <div class="formula-explanation">
+                    <h5>Explanation</h5>
+                    <p>${formula.description}</p>
+                </div>
+            ` : ''}
+            
+            ${formula.examples ? `
+                <div class="formula-examples">
+                    <h5>Examples</h5>
+                    <ul>
+                        ${formula.examples.map(example => `<li>${example}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            
+            ${data.validation ? `
+                <div class="formula-validation">
+                    <h5>Validation</h5>
+                    <p class="${data.validation.isValid ? 'valid' : 'invalid'}">
+                        ${data.validation.isValid ? '✅ Formula is valid' : '❌ Formula has issues'}
+                    </p>
+                    ${data.validation.errors ? `
+                        <ul class="errors">
+                            ${data.validation.errors.map(error => `<li>${error}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+async function displayFormulaLibrary() {
+    try {
+        const response = await fetch('/api/formulas/library');
+        const data = await response.json();
+        
+        if (data.success) {
+            const content = `
+                <div class="formula-library">
+                    <h4>📚 Formula Library</h4>
+                    
+                    ${Object.entries(data.library).map(([category, formulas]) => `
+                        <div class="formula-category">
+                            <h5>${category.charAt(0).toUpperCase() + category.slice(1)} Formulas</h5>
+                            <div class="formulas-grid">
+                                ${formulas.map(formula => `
+                                    <div class="formula-item">
+                                        <strong>${formula.name}</strong>
+                                        <p>${formula.description}</p>
+                                        <code>${formula.syntax}</code>
+                                        <button onclick="insertFormula('${formula.syntax}')">Insert</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            addMessage(content, 'ai');
+        }
+    } catch (error) {
+        addMessage('Failed to load formula library', 'error');
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show temporary success message
+        const msg = document.createElement('div');
+        msg.textContent = 'Copied to clipboard!';
+        msg.style.cssText = 'position:fixed;top:20px;right:20px;background:#4caf50;color:white;padding:10px;border-radius:4px;z-index:1000;';
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2000);
+    });
+}
+
+async function insertFormula(formula) {
+    try {
+        await Excel.run(async (context) => {
+            const range = context.workbook.getSelectedRange();
+            range.formulas = [[formula]];
+            await context.sync();
+            addMessage('✅ Formula inserted successfully!', 'ai');
+        });
+    } catch (error) {
+        addMessage('❌ Failed to insert formula', 'error');
+    }
 }
 
 // Initialize status on load

@@ -59,10 +59,30 @@ app.use(express.urlencoded({ extended: true, limit: process.env.MAX_REQUEST_SIZE
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Basic chat endpoint (ready for OpenAI integration)
+// Advanced API Routes
+app.use('/api/analyze', require('./api/analyze'));
+// Mount API routes
+app.use('/api/whatif', require('./api/whatif'));
+app.use('/api/analyze', require('./api/analyze'));
+app.use('/api/formulas', require('./api/formulas'));
+app.use('/api/scenarios', require('./api/scenarios'));
+app.use('/api/predictions', require('./api/predictions'));
+app.use('/api/insights', require('./api/insights'));
+app.use('/api/formulas', require('./api/formulas'));
+app.use('/api/scenarios', require('./api/scenarios'));
+app.use('/api/predictions', require('./api/predictions'));
+app.use('/api/insights', require('./api/insights'));
+
+// Import advanced features
+const DataAnalyzer = require('./features/dataAnalyzer');
+const WhatIfAnalysis = require('./features/whatIfAnalysis');
+const FormulaGenerator = require('./features/formulaGenerator');
+const AIService = require('./features/aiService');
+
+// Enhanced chat endpoint with AI integration
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, selectedData } = req.body;
+        const { message, selectedData, chatHistory = [] } = req.body;
         
         if (!message || !selectedData) {
             return res.status(400).json({
@@ -71,21 +91,22 @@ app.post('/api/chat', async (req, res) => {
             });
         }
 
-        // TODO: Integrate OpenAI API here
-        const response = `I received your message: "${message}" about data range ${selectedData.address}. 
+        // Use AI service if available, otherwise fallback
+        let response;
+        let action = null;
         
-To enable full AI functionality:
-1. Add your OpenAI API key to .env file
-2. Integrate OpenAI chat completion API
-3. Add advanced features like formula generation and data analysis
-
-Data Summary:
-- Range: ${selectedData.address}
-- Size: ${selectedData.rowCount} rows × ${selectedData.columnCount} columns`;
+        if (process.env.OPENAI_API_KEY) {
+            const aiResult = await AIService.processMessage(message, selectedData, chatHistory);
+            response = aiResult.response;
+            action = aiResult.action;
+        } else {
+            response = await generateFallbackResponse(message, selectedData);
+        }
 
         res.json({
             success: true,
             response: response,
+            action: action,
             timestamp: new Date().toISOString()
         });
 
@@ -93,10 +114,61 @@ Data Summary:
         console.error('Chat endpoint error:', error);
         res.status(500).json({
             success: false,
-            error: 'Internal server error'
+            error: error.message || 'Internal server error'
         });
     }
 });
+
+// Fallback response when OpenAI is not configured
+async function generateFallbackResponse(message, selectedData) {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('what if') || lowerMessage.includes('scenario')) {
+        return `What-If Analysis for ${selectedData.address}:
+        
+I can help you perform scenario analysis! Here are some examples:
+• "What if I increase column A values by 10%?"
+• "What if column B costs double?"
+• "What would happen if sales grew by 15%?"
+
+To enable full AI-powered what-if analysis, add your OpenAI API key to the .env file.
+
+Current data: ${selectedData.rowCount} rows × ${selectedData.columnCount} columns`;
+    }
+    
+    if (lowerMessage.includes('average') || lowerMessage.includes('mean')) {
+        return `For range ${selectedData.address}, I can help calculate averages.
+        
+Try these formulas:
+• =AVERAGE(${selectedData.address}) - Simple average
+• =AVERAGEIF(${selectedData.address},">0") - Average of positive values only
+
+Data Summary: ${selectedData.rowCount} rows × ${selectedData.columnCount} columns`;
+    }
+    
+    if (lowerMessage.includes('sum') || lowerMessage.includes('total')) {
+        return `For range ${selectedData.address}, here are sum formulas:
+        
+• =SUM(${selectedData.address}) - Sum all values
+• =SUMIF(${selectedData.address},">0") - Sum positive values only
+• =SUMPRODUCT(${selectedData.address}) - Product sum
+
+Current selection: ${selectedData.rowCount} rows × ${selectedData.columnCount} columns`;
+    }
+    
+    return `I received your message about "${message}" for range ${selectedData.address}.
+
+To unlock full AI capabilities including:
+🔮 What-If Analysis & Scenarios
+📊 Advanced Data Insights  
+🧮 Smart Formula Generation
+📈 Predictive Analytics
+🎯 Goal Seek Analysis
+
+Please add your OpenAI API key to the .env file.
+
+Current data: ${selectedData.rowCount} rows × ${selectedData.columnCount} columns`;
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {

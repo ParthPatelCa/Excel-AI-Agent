@@ -44,7 +44,7 @@
                     <h3>⚡ Quick Actions</h3>
                 </div>
                 <div class="action-grid">
-                    <button class="action-btn" data-action="analyze" title="Analyze selected data">
+                    <button class="action-btn" data-action="analyze" title="Comprehensive data analysis">
                         <span class="action-icon">📈</span>
                         <span class="action-label">Analyze</span>
                     </button>
@@ -52,14 +52,96 @@
                         <span class="action-icon">📋</span>
                         <span class="action-label">Summarize</span>
                     </button>
-                    <button class="action-btn" data-action="chart" title="Suggest chart type">
-                        <span class="action-icon">📊</span>
-                        <span class="action-label">Chart</span>
+                    <button class="action-btn" data-action="whatif" title="What-if analysis scenarios">
+                        <span class="action-icon">🎯</span>
+                        <span class="action-label">What-If</span>
                     </button>
-                    <button class="action-btn" data-action="formulas" title="Suggest formulas">
+                    <button class="action-btn" data-action="predict" title="Trend predictions">
+                        <span class="action-icon">🔮</span>
+                        <span class="action-label">Predict</span>
+                    </button>
+                    <button class="action-btn" data-action="insights" title="Business insights">
+                        <span class="action-icon">💡</span>
+                        <span class="action-label">Insights</span>
+                    </button>
+                    <button class="action-btn" data-action="formulas" title="Formula suggestions">
                         <span class="action-icon">🧮</span>
                         <span class="action-label">Formulas</span>
                     </button>
+                    <button class="action-btn" data-action="chart" title="Chart recommendations">
+                        <span class="action-icon">📊</span>
+                        <span class="action-label">Charts</span>
+                    </button>
+                    <button class="action-btn" data-action="scenarios" title="Scenario planning">
+                        <span class="action-icon">🗂️</span>
+                        <span class="action-label">Scenarios</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="advanced-features" id="advancedFeatures">
+                <div class="section-header">
+                    <h3>🚀 Advanced Features</h3>
+                </div>
+                <div class="feature-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="analysis">Analysis</button>
+                        <button class="tab-btn" data-tab="modeling">Modeling</button>
+                        <button class="tab-btn" data-tab="automation">Automation</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <div class="tab-panel active" id="analysis-tab">
+                            <div class="feature-grid">
+                                <button class="feature-btn" data-action="api:analyze:statistical" title="Statistical analysis">
+                                    <span>📊 Statistical Analysis</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:analyze:correlations" title="Correlation analysis">
+                                    <span>🔗 Correlations</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:analyze:outliers" title="Outlier detection">
+                                    <span>🎯 Outlier Detection</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:analyze:trends" title="Trend analysis">
+                                    <span>📈 Trend Analysis</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-panel" id="modeling-tab">
+                            <div class="feature-grid">
+                                <button class="feature-btn" data-action="api:whatif:scenarios" title="Scenario modeling">
+                                    <span>🎯 Scenario Modeling</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:predictions:generate" title="Predictive modeling">
+                                    <span>🔮 Predictions</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:whatif:sensitivity" title="Sensitivity analysis">
+                                    <span>📉 Sensitivity Analysis</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:whatif:goalseek" title="Goal seek analysis">
+                                    <span>🎯 Goal Seek</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-panel" id="automation-tab">
+                            <div class="feature-grid">
+                                <button class="feature-btn" data-action="api:formulas:library" title="Formula library">
+                                    <span>📚 Formula Library</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:insights:automated" title="Automated insights">
+                                    <span>🤖 Auto Insights</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:formulas:generate" title="AI formula generation">
+                                    <span>🧠 AI Formulas</span>
+                                </button>
+                                <button class="feature-btn" data-action="api:insights:patterns" title="Pattern recognition">
+                                    <span>🔍 Pattern Recognition</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -74,12 +156,16 @@
                         <div class="welcome-icon">👋</div>
                         <div class="welcome-content">
                             <h4>Welcome to ExcelAI Assistant!</h4>
-                            <p>I can help you analyze data, create formulas, and provide insights. Here are some things you can ask:</p>
+                            <p>I can help you with advanced data analysis, predictions, what-if scenarios, and business insights. Here are some things you can ask:</p>
                             <ul class="example-prompts">
-                                <li>"What's the correlation between columns A and B?"</li>
-                                <li>"Create a formula to calculate the growth rate"</li>
-                                <li>"What insights can you find in this data?"</li>
-                                <li>"Suggest the best chart type for this data"</li>
+                                <li>"Perform comprehensive statistical analysis on this data"</li>
+                                <li>"Create what-if scenarios for different growth rates"</li>
+                                <li>"Predict future trends based on this historical data"</li>
+                                <li>"Generate business insights and recommendations"</li>
+                                <li>"Detect outliers and anomalies in the data"</li>
+                                <li>"Calculate correlations between all variables"</li>
+                                <li>"Set up goal seek analysis for target values"</li>
+                                <li>"Generate Monte Carlo simulation scenarios"</li>
                             </ul>
                         </div>
                     </div>
